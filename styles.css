@@ -1,0 +1,410 @@
+/* ==========
+Version 4.1.0
+Tabs Block Plugin For Squarespace
+Copyright Will-Myers
+========== */
+/*Base Tabs Code - No Styling*/
+.wm-tabs-block{
+  --tab-gap: 0px;
+  --tab-padding: 1em 1.67em;
+  
+  --shadow-color: 0deg 0% 0%;
+  --tabs-shadow-low:
+    0px 0.3px 0.4px hsl(var(--shadow-color) / 0.16),
+    0px 1.1px 1.3px -2.2px hsl(var(--shadow-color) / 0.18);
+  --tabs-shadow-medium:
+    0px 0.3px 0.4px hsl(var(--shadow-color) / 0.15),
+    0px 1.5px 1.8px -1.1px hsl(var(--shadow-color) / 0.16),
+    -0.2px 5.7px 6.7px -2.2px hsl(var(--shadow-color) / 0.17);
+  --tabs-shadow-high:
+    0px 0.3px 0.4px hsl(var(--shadow-color) / 0.13),
+    -0.1px 2.5px 2.9px -0.4px hsl(var(--shadow-color) / 0.14),
+    -0.1px 5.2px 6.1px -0.9px hsl(var(--shadow-color) / 0.15),
+    -0.3px 9.8px 11.5px -1.3px hsl(var(--shadow-color) / 0.15),
+    -0.5px 17.7px 20.7px -1.8px hsl(var(--shadow-color) / 0.16),
+    -0.8px 30.3px 35.5px -2.2px hsl(var(--shadow-color) / 0.17);
+  
+  --tab-color: currentColor;
+  --tab-border: transparent;
+  --tab-border-top: var(--tab-border);
+  --tab-border-right: var(--tab-border);
+  --tab-border-bottom: var(--tab-border);
+  --tab-border-left: var(--tab-border);
+  
+  --indicator-size: 3px;
+  --indicator-color: currentColor;
+  --indicator-track-background: currentColor;
+  --indicator-track-opacity: .25;
+
+  --nav-background: currentColor;
+  --nav-border: ;
+  --nav-border-top: var(--nav-border);
+  --nav-border-right: var(--nav-border);
+  --nav-border-bottom: var(--nav-border);
+  --nav-border-left: var(--nav-border);
+  --nav-scroll-indicator-bkg: hsla(0, 0%, 90%, 1);
+  --nav-scroll-indicator-border: hsla(0, 0%, 50%, 1);
+  --nav-scroll-indicator: black;
+  
+  --panel-border: ;
+  --panels-background: currentColor;
+
+  --max-nav-width: 100%;
+  --nav-width: 33.33%;
+  --real-nav-width: clamp(0px, var(--nav-width), var(--max-nav-width));
+  --content-width: calc(100% - var(--real-nav-width));
+  
+  --icon-color: currentColor;
+  --icon-width: 2px;
+}
+
+.hide-block{
+  display:none;
+}
+
+.wm-tabs-block{
+  margin:17px;
+  position:relative;
+  box-shadow: var(--tabs-shadow-medium);
+}
+.wm-tabs-block .nav-container{
+  position:relative;
+  z-index:2;
+  transition: top .2s ease;
+  box-sizing:border-box;
+}
+.wm-tabs-block article {
+  z-index:1;
+  border: var(--panel-border);
+  box-sizing:border-box;
+  position:relative;
+  width:100%;
+}
+
+.wm-tabs-block section {
+  position:relative;
+  box-sizing:border-box;
+  display:none;
+  z-index:2;
+}
+
+.wm-tabs-block .nav-background{
+  z-index:1;
+  position:absolute;
+  top:0;
+  left:0;
+  height:100%;
+  width:100%;
+  background: var(--nav-background);
+  opacity: var(--nav-background-opacity, .05);
+  transition: height .2s ease; 
+}
+
+.wm-tabs-block .panels-background{
+  z-index:1;
+  position:absolute;
+  top:0;
+  left:0;
+  height:100%;
+  width:100%;
+  background: var(--panels-background);
+  opacity: var(--panels-background-opacity, .05);
+  transition: height .2s ease;
+}
+
+/**
+* Active Sections
+**/
+.wm-tabs-block section.active {
+  display:block;
+}
+
+/**
+ * Button Positioning
+**/
+.wm-tabs-block nav{
+  display:flex;
+  flex-wrap:nowrap;
+  position:relative;
+  box-sizing:border-box;
+
+  overflow:scroll;
+  flex-wrap:nowrap;
+  gap: var(--tab-gap);
+  justify-content: var(--tab-position);
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+  scroll-behavior: smooth;
+
+  z-index:2;
+  box-shadow: var(--nav-shadow);
+  border-top:var(--nav-border-top, var(--nav-border));
+  border-right:var(--nav-border-right, var(--nav-border));
+  border-bottom:var(--nav-border-bottom, var(--nav-border));
+  border-left:var(--nav-border-left, var(--nav-border));
+}
+.wm-tabs-block  nav::-webkit-scrollbar {
+  display: none;
+}
+
+.wm-tabs-block nav button, .wm-tabs-block section > button{
+  touch-action: manipulation;
+  display:flex;
+  flex-grow:1;
+  flex-shrink:0;
+  justify-content:center;
+  align-items:center;
+  box-sizing:border-box;
+  cursor: pointer;
+  border:0;
+  background:0;
+  opacity: .5;
+  max-width: 75%;
+}
+.wm-tabs-block nav button{
+  background:var(--tab-background);
+  padding: var(--tab-padding);
+  color: var(--tab-color);
+  border-top:var(--tab-border-top, var(--tab-border));
+  border-right:var(--tab-border-right, var(--tab-border));
+  border-bottom:var(--tab-border-bottom, var(--tab-border));
+  border-left:var(--tab-border-left, var(--tab-border));
+}
+.wm-tabs-block section > button{
+  display:none;
+}
+
+.wm-tabs-block nav > span{
+  display:block;
+  transition: opacity .3s ease;
+}
+.wm-tabs-block nav button * {
+  pointer-events: none;
+  margin:0;
+}
+
+/*Scroll Indicators*/
+.wm-tabs-block .scrollable-indicator {
+  position: absolute;
+  top:0;
+  z-index:9;
+  height: calc(100% - var(--indicator-size));
+  width: 25px;
+  display: flex;
+  align-items: center;
+  visibility:hidden;
+  opacity:0;
+  cursor: pointer;
+  transition: opacity .3s ease,
+    visibility 0s ease .3s;
+  background: var(--nav-scroll-indicator-bkg);
+}
+.wm-tabs-block .scrollable-indicator.show {
+  visibility:visible;
+  opacity:1;
+  transition: opacity .3s ease,
+    visibility 0s ease 0s;
+}
+.wm-tabs-block .scroll-back-arrow {
+  left: 0;
+  border-right: 1px solid var(--nav-scroll-indicator-border);
+}
+.wm-tabs-block .scroll-forward-arrow {
+  right: 0;
+  border-left: 1px solid var(--nav-scroll-indicator-border);
+}
+.wm-tabs-block .scrollable-indicator svg, 
+.wm-tabs-block .scrollable-indicator path{
+  stroke: var(--nav-scroll-indicator);
+}
+
+
+/**
+* Hover on Tab Buttons
+**/
+.wm-tabs-block nav button:hover{
+  opacity: 1;
+}
+
+/**
+* Active State for Tab Buttons
+**/
+.wm-tabs-block nav button.active{
+  opacity: 1;
+}
+
+
+
+/** 
+ * Indicator & Indicator Scroll
+**/
+.wm-tabs-block span.indicator-track{
+  box-sizing:border-box;
+  position:absolute;
+  
+  opacity: var(--indicator-track-opacity);
+  background: var(--indicator-track-background, var(--tab-color));
+  height:var(--indicator-size);
+  width:var(--width);
+  bottom:0;
+  transition: opacity .2s ease, height .2s ease;
+  will-change: opacity, height;
+}
+.wm-tabs-block span.indicator{
+  box-sizing:border-box;
+  border-radius:3px;
+  position:absolute;
+  z-index:1;
+  background:var(--indicator-color, var(--active-tab-color));
+  transition: left .3s ease,
+    width .3s ease,
+    top .3s ease,
+    height .3s ease;
+  will-change: left, top, height, width;
+
+  height:var(--indicator-size);
+  bottom:0px;
+  width:var(--width);
+  left:var(--left);
+}
+
+/*Vertical Alignment -- When Larger Than 767px*/
+@media(min-width:767px) {
+  [data-layout="vertical"].wm-tabs-block{
+    display: flex;
+  }
+  [data-layout="vertical"] .nav-container{
+    width: var(--real-nav-width);
+    padding-right:17px;
+    align-self: stretch;
+  }
+  [data-layout="vertical"] article{
+    min-width: 0;
+    width: var(--content-width);
+    margin-top:0px;
+    flex-grow:1;
+  }
+  [data-layout="vertical"] nav{
+    flex-wrap:wrap;
+    align-content: start;
+    height:100%;
+  }
+  [data-layout="vertical"] nav button {
+    flex-shrink:1;
+    justify-content:start;
+    text-align: start;
+    width:100%;
+    max-width:initial;
+  }
+  [data-layout="vertical"] span.indicator-track{
+    width: var(--indicator-size);
+    height:var(--height);
+    top:0;
+    left:0;
+  }
+  [data-layout="vertical"] span.indicator {
+    width: var(--indicator-size);
+    height:var(--height);
+    top: var(--top);
+  }
+}
+
+/**
+* Mobile Accordion Tabs 
+**/
+@media(max-width:767px){
+  .wm-tabs-block[data-mobile-type="accordion"] section > button{
+    display:flex;
+    margin: 17px 0px;
+    width:100%;
+    justify-content:space-between;
+    color:var(--tab-color);
+  }
+  .wm-tabs-block[data-mobile-type="accordion"] button > .icon{
+    height:30px;
+    width:30px;
+  }
+  .wm-tabs-block[data-mobile-type="accordion"] .icon path{
+    transition: d .3s ease;
+  }
+  .wm-tabs-block[data-mobile-type="accordion"] .active .icon path{
+    d: path('M20 38l12 -14L44 38');
+  }
+  @supports not (d: path('M20 38l12 -14L44 38')) {
+    .wm-tabs-block[data-mobile-type="accordion"] .icon{
+      transition: transform .3s ease;
+    }
+    .wm-tabs-block[data-mobile-type="accordion"] .active .icon{
+      transform: rotate(180deg)
+    }
+  }
+
+  .wm-tabs-block[data-mobile-type="accordion"] .nav-container{
+    display:none;
+  }
+  .wm-tabs-block[data-mobile-type="accordion"] section {
+    display:block;
+  }
+  .wm-tabs-block[data-mobile-type="accordion"] article > section .wrapper {
+    display:none;
+  }
+  .wm-tabs-block[data-mobile-type="accordion"] article > section.active .wrapper {
+    display:block;
+  }
+  .wm-tabs-block[data-mobile-type="accordion"] section {
+    border-top:1px solid hsla(0,0%, 50%, .5);
+  }
+  .wm-tabs-block[data-mobile-type="accordion"] section:last-of-type {
+    border-bottom:1px solid hsla(0,0%, 50%, .5);
+  }
+}
+
+/**
+* Edit Mode Code
+**/
+body.sqs-edit-mode-active .wm-tab-start{
+  border-bottom: 1px dashed #4669be;
+  position:relative;
+}
+body.sqs-edit-mode-active .wm-tabs-end{
+  border-top: 1px dashed #4669be;  
+  position:relative;
+}
+body.sqs-edit-mode-active .wm-tab-start::after{
+  content: 'New Tab Start';
+  position: absolute;
+  font-size: 10px;
+  bottom: -10px;
+  padding: 0px 4px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  left: 50%;
+  transform:translateX(-50%);
+  background:#4669be;
+  color:white;
+  box-sizing: border-box;
+  text-align: center;
+  opacity: 0;
+  transition: opacity .2s ease;
+}
+body.sqs-edit-mode-active .wm-tabs-end::after{
+  content:'Tabs Group End';
+  position: absolute;
+  font-size: 10px;
+  top: -10px;
+  padding: 0px 4px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  left: 50%;
+  transform:translateX(-50%);
+  background:#4669be;
+  color:white;
+  box-sizing: border-box;
+  text-align: center;
+  transition: opacity .2s ease;
+  opacity: 0;
+}
+body.sqs-edit-mode-active .sqs-block:hover .wm-tab-start::after, 
+body.sqs-edit-mode-active .sqs-block:hover .wm-tabs-end::after{
+  opacity: 1;
+}
