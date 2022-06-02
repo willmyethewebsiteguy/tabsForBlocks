@@ -1,10 +1,15 @@
 /**
- * Version 4.1.05
+ * Version 4.2
  * Tabs For Squarespace Sections
  * Copyright Will Myers
 **/
 
 (function () {
+  const ps = {
+    cssId: 'wm-tabs',
+    cssFile: 'https://cdn.jsdelivr.net/gh/willmyethewebsiteguy/tabsForBlocks@4.2.001/styles.min.css'
+  }
+  
   let WMTabs = (function(){
     // Default settings
     let defaults = {
@@ -536,13 +541,13 @@
      * Add CSS
      */
     Constructor.prototype.addCSS = function () {
-      let cssFile = document.querySelector("#wm-tabs-css");
+      let cssFile = document.querySelector(`#${ps.cssId}-css`);
       function addCSSFile() {
-        let url = "https://assets.codepen.io/3198845/WMContentTabs62220v4.1.4.min.css";
+        let url = `${ps.cssFile}`;
         let head = document.getElementsByTagName("head")[0],
             link = document.createElement("link");
         link.rel = "stylesheet";
-        link.id = "wm-tabs-css";
+        link.id = `${ps.cssId}-css`;
         link.type = "text/css";
         link.href = url;
         link.onload = function () {
@@ -553,9 +558,9 @@
       }
 
       function loaded() {
-        const event = new Event("wmtabs:css-loaded");
+        const event = new Event(`${ps.cssId}:css-loaded`);
         window.dispatchEvent(event);
-        document.querySelector("body").classList.add("wm-tabs-css-loaded");
+        document.querySelector("body").classList.add(`#${ps.cssId}-css-loaded`);
       }
 
       if (!cssFile) {
