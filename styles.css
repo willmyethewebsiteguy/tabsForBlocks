@@ -62,6 +62,10 @@ Copyright Will-Myers
   display:none;
 }
 
+body:not(.sqs-edit-mode-active) .hide-target {
+  display:none !important;
+}
+
 .wm-tabs-block{
   margin:17px;
   position:relative;
@@ -81,11 +85,29 @@ Copyright Will-Myers
   width:100%;
 }
 
-.wm-tabs-block section {
+.wm-tabs-block article > section {
   position:relative;
   box-sizing:border-box;
   display:none;
   z-index:2;
+}
+
+.sqs-layout:not(.sqs-editing) .sqs-row .wm-tabs-block .sqs-block:not(.float):not(.sqs-feature-gated-wrapper):first-child {
+  padding-top:17px;
+}
+.sqs-layout:not(.sqs-editing) .sqs-row .wm-tabs-block .sqs-block:not(.float):not(.sqs-feature-gated-wrapper):first-child:last-child {
+  padding-top:17px;
+  padding-bottom:17px;
+}
+.sqs-layout:not(.sqs-editing) .sqs-row .wm-tabs-block .sqs-block:not(.float):not(.sqs-feature-gated-wrapper):last-child {
+  padding-bottom:17px;
+}
+
+.wm-tabs-block section[data-type="page"] .sqs-layout {
+  padding:17px;
+}
+.wm-tabs-block .page-section:first-child{
+  padding-top:0px !important; 
 }
 
 .wm-tabs-block .nav-background{
@@ -218,6 +240,13 @@ Copyright Will-Myers
   stroke: var(--nav-scroll-indicator);
 }
 
+/*Fluid Engine Tweaks*/
+.fe-block .wm-tabs-block{
+  margin:0;
+}
+.fe-block .wm-tabs-block .sqs-block{
+  box-sizing:border-box;
+}
 
 /**
 * Hover on Tab Buttons
@@ -232,8 +261,6 @@ Copyright Will-Myers
 .wm-tabs-block nav button.active{
   opacity: 1;
 }
-
-
 
 /** 
  * Indicator & Indicator Scroll
@@ -295,6 +322,7 @@ Copyright Will-Myers
     text-align: start;
     width:100%;
     max-width:initial;
+    align-items:start;
   }
   [data-layout="vertical"] span.indicator-track{
     width: var(--indicator-size);
@@ -407,4 +435,17 @@ body.sqs-edit-mode-active .wm-tabs-end::after{
 body.sqs-edit-mode-active .sqs-block:hover .wm-tab-start::after, 
 body.sqs-edit-mode-active .sqs-block:hover .wm-tabs-end::after{
   opacity: 1;
+}
+
+
+/*Image In Source Upload*/
+.sqs-block-image img.loaded {
+  --position: 50% 50%;
+  height: 100%;
+  width: 100%;
+  visibility: visible;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
 }
