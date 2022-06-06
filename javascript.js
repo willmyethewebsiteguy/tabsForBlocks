@@ -7,7 +7,7 @@
 (function () {
   const ps = {
     cssId: 'wm-tabs',
-    cssFile: 'https://cdn.jsdelivr.net/gh/willmyethewebsiteguy/tabsForBlocks@4.2.002/styles.min.css'
+    cssFile: 'https://assets.codepen.io/3198845/WMTabsTESTINGONLY.css'
   };
   const defaults = {
       layout: "horiztonal", // or 'vertical'
@@ -633,12 +633,12 @@
       instance.addSection(instance.elements.article);
 
       //Add Blocks to Section
-      while (!nextEl.querySelector(`[data-tabs-end]`) && 200 > j) {
+      while (!nextEl.querySelector(`[data-tabs-end], .wm-tabs-end`) && 200 > j) {
         elements.container.querySelectorAll("article > section")[sectionIndex].append(nextEl);
         nextEl = elements.container.nextElementSibling;
         if (!nextEl) break;
 
-        if (nextEl.querySelector(`[data-wm-plugin="tabs"]`)) {
+        if (nextEl.querySelector(`[data-wm-plugin="tabs"], .wm-tab-start`)) {
           nextEl.classList.add("hide-block");
           instance.addSection(instance.elements.article);
           sectionIndex++;
@@ -646,7 +646,7 @@
         j = j + 1;
       }
 
-      elements.container.querySelectorAll(`[data-wm-plugin="tabs"]`).forEach((el) => el.classList.add("loaded"));
+      elements.container.querySelectorAll(`[data-wm-plugin="tabs"], .wm-tab-start`).forEach((el) => el.classList.add("loaded"));
 
       return elements.sections;
     }
@@ -662,7 +662,7 @@
 
       //Loop through each section
       for (section of elements.sections) {
-        let el = section.querySelector(`[data-wm-plugin="tabs"]`);
+        let el = section.querySelector(`[data-wm-plugin="tabs"], .wm-tab-start`);
         let btn = instance.buildButton(el);
         htmlString += btn;
       }
@@ -679,7 +679,7 @@
      * @param  {instance} The settings for this instance
      */
     function getLocalSettings(el) {
-      el = el.querySelector(`[data-wm-plugin="tabs"]`);
+      el = el.querySelector(`[data-wm-plugin="tabs"], .wm-tab-start`);
       let localSettings = {},
           data = el.dataset;
 
@@ -719,7 +719,7 @@
      * @param {Object} options  User options and settings
      */
     function Constructor(el, options = {}) {
-
+      console.log(el)
       let local = getLocalSettings(el);
 
       this.settings = Object.assign({}, defaults, global, local, options);
@@ -1450,8 +1450,8 @@
     }
   }
 
-  //Build HTML from Blocks 
-  let initBlocks = document.querySelectorAll(`[data-wm-plugin="tabs"][data-tab-start]:not(.loaded)`);
+  //Build HTML from Stacked Blocks 
+  let initBlocks = document.querySelectorAll(`[data-wm-plugin="tabs"][data-tab-start]:not(.loaded), .wm-tab-start:not(.loaded)`);
   for (const el of initBlocks) {
     let block = el.closest(".sqs-block");
     //Stop if already within a Tabs Section
