@@ -7,12 +7,9 @@
 (function () {
   const ps = {
     cssId: 'wm-tabs',
-    cssFile: 'https://cdn.jsdelivr.net/gh/willmyethewebsiteguy/tabsForBlocks@4.2.001/styles.min.css'
-  }
-  
-  let WMTabs = (function(){
-    // Default settings
-    let defaults = {
+    cssFile: 'https://assets.codepen.io/3198845/WMTabsTESTINGONLY.css'
+  };
+  const defaults = {
       layout: "horiztonal", // or 'vertical'
       event: "click", // or 'hover'
       inAnimation: "slideIn",
@@ -24,14 +21,11 @@
       tabbingDelay: 80,
     };
 
+  let WMTabs = (function(){
+
     let global = window.wmTabsSettings || {};
 
-    /**
-     * Emit a custom event
-     * @param  {String} type   The event type
-     * @param  {Object} detail Any details to pass along with the event
-     * @param  {Node}   elem   The element to attach the event to
-     */
+    /* Emit a custom event */
     function emitEvent(type, detail = {}, elem = document) {
       // Make sure there's an event type
       if (!type) return;
@@ -46,11 +40,10 @@
       // Dispatch the event
       return elem.dispatchEvent(event);
     }
-    
-        /**
+
+    /**
      * Debounce functions for better performance
      * (c) 2021 Chris Ferdinandi, MIT License, https://gomakethings.com
-     * @param  {Function} fn The function to debounce
      */
     function debounce(fn) {
       // Setup a timer
@@ -74,9 +67,7 @@
       };
     }
 
-    /**
-     * Scroll To Top When Below
-     */
+    /* Scroll To Top When Below */
     function scrollToTopOfTab(instance) {
       if (!instance.elements.header) return;
       let isBelow = false,
@@ -93,9 +84,9 @@
 
       return isBelow
     }
-    
-    
-        /**
+
+
+    /**
      * Toggle the button
      * @param  {Constructor} instance The current instantiation
      */
@@ -107,7 +98,12 @@
       for (btn of elements.navButtons) {
         btn.classList.remove("active");
       }
-      elements.navButtons[index].classList.add("active");
+      try {
+        elements.navButtons[index].classList.add("active");
+      } catch (err) {
+        console.log('instance', instance.elements.container)
+        console.error(err)
+      }
 
       // Add Class to correct section
       for (section of elements.sections) {
@@ -118,7 +114,7 @@
 
       emitEvent("wmTabs:afterOpen", {}, elements.container);
     }
-    
+
     /**
      * Create Tab Buttonan event listener
      * @param  {Constructor} instance The current instantiation
@@ -131,11 +127,9 @@
         if (target.closest(".wm-tab-button")) {
           let el = target.closest(".wm-tab-button"),
               index = Array.prototype.indexOf.call(el.parentElement.children, el) + 1;
-
           openTab(index, instance);
           scrollToTopOfTab(instance);
         }
-
       }
 
       for (button of elements.navButtons) {
@@ -156,7 +150,7 @@
         }
       }
     }
-    
+
     /**
      * Create Resize Event Listener
      * @param  {Constructor} instance The current instantiation
@@ -172,7 +166,7 @@
 
       window.addEventListener("resize", handleEvent);
     }
-    
+
     /**
      * Nav Scroll Listener
      * @param  {Constructor} instance The current instantiation
@@ -182,7 +176,7 @@
         setScrollIndicatorsVisibility(instance)
       }
 
-      instance.elements.nav.addEventListener("scroll", handleEvent);
+      instance.elements.nav?.addEventListener("scroll", handleEvent);
     }
 
     /**
@@ -193,7 +187,9 @@
       function handleEvent(options) {
         scrollNav(instance, options)
       }
-
+      
+      if(!instance.elements.forwardScrollIndicator || !instance.elements.backScrollIndicator) return;
+      
       instance.elements.forwardScrollIndicator
         .addEventListener("click", function() {
         handleEvent({amount: 0.5})
@@ -204,7 +200,6 @@
       });
     }
 
-    
     /**
      * Create Header Transition Event Listener
      * @param  {Constructor} instance The current instantiation
@@ -222,7 +217,7 @@
 
       header.addEventListener("transitionend", handleEvent);
     }
-    
+
     /**
      * Show Indicators
      * @param  {Constructor} instance The current instantiation
@@ -231,7 +226,7 @@
       instance.elements.indicator.style.visibility = "";
       instance.elements.indicatorTrack.style.visibility = "";
     }
-
+    
     /**
      * Create Page Load Event Listener
      * @param  {Constructor} instance The current instantiation
@@ -257,7 +252,8 @@
      * @return {Function}             The callback function
      **/
     function afterTabOpenEventListener(instance) {
-      function handleEvent() {
+      function handleEvent(e) {
+        e.stopPropagation();
         getNavWidth(instance);
         setIndicator(instance);
         centerTabs(instance);
@@ -267,28 +263,29 @@
 
       instance.elements.container.addEventListener("wmTabs:afterOpen", handleEvent);
     }
-    
-   /**
+
+    /**
      * Create an event listener
      * @param  {Node}        btn      The button to attach the listener to
      * @param  {Constructor} instance The current instantiation
      * @return {Function}             The callback function
      **/
     function setIndicator(instance) {
+      //console.log('instance', instance.elements.container)
       let elements = instance.elements,
-        btn = elements.activeTab,
-        leftPos = btn.offsetLeft,
-        topPos = btn.offsetTop,
-        width = btn.offsetWidth,
-        height = btn.offsetHeight;
-
-      // console.log(`Indicator Height = ${height}`);
-      // console.log(`Indicator Width = ${height}`);
+          btn = elements.activeTab,
+          leftPos = btn.offsetLeft,
+          topPos = btn.offsetTop,
+          width = btn.offsetWidth,
+          height = btn.offsetHeight;
 
       elements.indicator.style.setProperty("--width", width + "px");
       elements.indicator.style.setProperty("--height", height + "px");
       elements.indicator.style.setProperty("--top", topPos + "px");
       elements.indicator.style.setProperty("--left", leftPos + "px");
+
+      // console.log(`Indicator Height = ${height}`);
+      // console.log(`Indicator Width = ${height}`);
     }
 
     /**
@@ -311,22 +308,22 @@
       // console.log(`Indicator Track Height = ${navScrollHeight}`);
       // console.log(`Indicator Track Width = ${navScrollWidth}`);
     }
-    
-        /**
+
+    /**
      * Center Tabs if off screen
      * @param  {instance} The settings for this instance
      */
     function centerTabs(instance) {
       let elements = instance.elements,
-        btn = elements.activeTab,
-        navScrollLeftPos = instance.elements.nav.scrollLeft,
-        navWidth = instance.elements.nav.offsetWidth,
-        btnWidth = btn.offsetWidth,
-        activeBtnRightEdge = btn.offsetLeft + btnWidth,
-        activeBtnLeftEdge = btn.offsetLeft,
-        offset = navWidth * 0.05,
-        viewableNavLeftEdge = navScrollLeftPos + offset,
-        viewableNavRightEdge = navScrollLeftPos + navWidth - offset;
+          btn = elements.activeTab,
+          navScrollLeftPos = instance.elements.nav.scrollLeft,
+          navWidth = instance.elements.nav.offsetWidth,
+          btnWidth = btn.offsetWidth,
+          activeBtnRightEdge = btn.offsetLeft + btnWidth,
+          activeBtnLeftEdge = btn.offsetLeft,
+          offset = navWidth * 0.05,
+          viewableNavLeftEdge = navScrollLeftPos + offset,
+          viewableNavRightEdge = navScrollLeftPos + navWidth - offset;
 
       //If off Right Side
       if (activeBtnRightEdge > viewableNavRightEdge) {
@@ -356,7 +353,7 @@
       // console.log(`Active Button Left Edge = ${activeBtnLeftEdge}`)
       // console.log(`Viewable Nav Left Edge = ${viewableNavLeftEdge}`)
     }
-    
+
     /**
      * Scroll the Tab Navigation Some Amount
      * @param  {instance} The settings for this instance
@@ -364,11 +361,10 @@
     function scrollNav(instance, options) {
       let currentPos = instance.elements.nav.scrollLeft,
           amount = instance.elements.nav.offsetWidth * options.amount;
-      
-      console.log(options.amount)
+
       instance.elements.nav.scrollLeft = instance.elements.nav.scrollLeft + amount;
     }
-    
+
     /**
      * Show or Hide the Tab Nav Indicators
      * @param  {instance} The settings for this instance
@@ -380,13 +376,13 @@
           navScrollLeftPos = instance.elements.nav.scrollLeft,
           navWidth = instance.elements.nav.offsetWidth,
           viewableNavRightEdge = navScrollLeftPos + navWidth;
-      
-      navScrollLeftPos > 25 ? backSI.classList.add('show') : backSI.classList.remove('show');
-      viewableNavRightEdge + 25 < scrollWidth ? forwardSI.classList.add('show') : forwardSI.classList.remove('show');
 
-    //  console.log('navScrollLeftPos', navScrollLeftPos)
-    //  console.log('viewableNavRightEdge', viewableNavRightEdge)
-    //  console.log('scrollWidth', scrollWidth)
+      navScrollLeftPos > 25 ? backSI?.classList.add('show') : backSI?.classList.remove('show');
+      viewableNavRightEdge + 25 < scrollWidth ? forwardSI?.classList.add('show') : forwardSI?.classList.remove('show');
+
+      //  console.log('navScrollLeftPos', navScrollLeftPos)
+      //  console.log('viewableNavRightEdge', viewableNavRightEdge)
+      //  console.log('scrollWidth', scrollWidth)
     }
 
     /**
@@ -433,8 +429,7 @@
       let local = getLocalSettings(el);
 
       this.settings = Object.assign({}, defaults, global, local, options);
-      this.allowTabbing = true;
-      
+
       // Add Elements Obj
       this.elements = {
         container: el,
@@ -504,14 +499,14 @@
 
       // Create the Toggle event listener
       createEventListener(this);
-      
+
       // Create scroll listener when nav is scrolled
       createTabNavScrollListener(this);
       createNavScrollIndicatorClickListener(this);
 
       // Create the After Tab Open event listener
       afterTabOpenEventListener(this);
-
+     
       this.initTab();
     }
 
@@ -535,6 +530,8 @@
           }
         }
       }
+      
+      this.elements.container.classList.remove('loading');
     };
 
     /**
@@ -553,7 +550,7 @@
         link.onload = function () {
           loaded();
         };
-        
+
         head.prepend(link);
       }
 
@@ -572,22 +569,9 @@
     };
 
     return Constructor;
-
   }());
 
   let BuildTabsHTML = (function () {
-    // Default settings
-    let defaults = {
-      layout: "horiztonal", // or 'vertical'
-      event: "click", // or 'hover'
-      inAnimation: "slideIn",
-      mobileType: "tabs", // or 'accordions'
-      on: {
-        beforeOpenTab: null,
-        afterOpenTab: null,
-      },
-      tabbingDelay: 80,
-    };
 
     let global = window.wmTabsSettings || {};
 
@@ -601,7 +585,7 @@
       container.classList.add("wm-tabs-block");
       container.id = 'wm-tab-' + (instance.elements.tabsCount + 1);
       container.dataset.layout = instance.settings.layout;
-      
+
       let backIcon = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" aria-labelledby="title" role="img" xmlns:xlink="http://www.w3.org/1999/xlink">
   <title>Back</title>
   <path data-name="layer1" fill="none" stroke="#202020" stroke-miterlimit="10" stroke-width="2" d="M39 20.006L25 32l14 12.006" stroke-linejoin="round" stroke-linecap="round"></path>
@@ -641,20 +625,20 @@
      */
     function addSections(instance) {
       let elements = instance.elements,
-        nextEl = elements.container.nextElementSibling,
-        sectionIndex = 0,
-        j = 1;
+          nextEl = elements.container.nextElementSibling,
+          sectionIndex = 0,
+          j = 1;
 
       nextEl.classList.add("hide-block");
       instance.addSection(instance.elements.article);
 
       //Add Blocks to Section
-      while (!nextEl.querySelector(".wm-tabs-end") && 200 > j) {
+      while (!nextEl.querySelector(`[data-tabs-end]`) && 200 > j) {
         elements.container.querySelectorAll("article > section")[sectionIndex].append(nextEl);
         nextEl = elements.container.nextElementSibling;
         if (!nextEl) break;
 
-        if (nextEl.querySelector(".wm-tab-start")) {
+        if (nextEl.querySelector(`[data-wm-plugin="tabs"]`)) {
           nextEl.classList.add("hide-block");
           instance.addSection(instance.elements.article);
           sectionIndex++;
@@ -662,7 +646,7 @@
         j = j + 1;
       }
 
-      elements.container.querySelectorAll(".wm-tab-start").forEach((el) => el.classList.add("loaded"));
+      elements.container.querySelectorAll(`[data-wm-plugin="tabs"]`).forEach((el) => el.classList.add("loaded"));
 
       return elements.sections;
     }
@@ -673,12 +657,12 @@
      */
     function addButtons(instance) {
       let elements = instance.elements,
-        currentNav = elements.nav.innerHTML,
-        htmlString = "";
+          currentNav = elements.nav.innerHTML,
+          htmlString = "";
 
       //Loop through each section
       for (section of elements.sections) {
-        let el = section.querySelector(".wm-tab-start");
+        let el = section.querySelector(`[data-wm-plugin="tabs"]`);
         let btn = instance.buildButton(el);
         htmlString += btn;
       }
@@ -695,9 +679,9 @@
      * @param  {instance} The settings for this instance
      */
     function getLocalSettings(el) {
-      el = el.querySelector(".wm-tab-start");
+      el = el.querySelector(`[data-wm-plugin="tabs"]`);
       let localSettings = {},
-        data = el.dataset;
+          data = el.dataset;
 
       if (data.layout) localSettings.layout = data.layout;
       if (data.event) {
@@ -739,7 +723,6 @@
       let local = getLocalSettings(el);
 
       this.settings = Object.assign({}, defaults, global, local, options);
-      this.allowTabbing = true;
 
       // Add Elements Obj
       this.elements = {
@@ -814,7 +797,7 @@
     Constructor.prototype.buildButton = function (el) {
       //Build Each Button and add to string
       let innerHTML = el.innerHTML,
-        id = el.id;
+          id = el.id;
       return `<button data-id="${id}" class="wm-tab-button">${innerHTML}</button>`;
     };
 
@@ -837,7 +820,7 @@
       //Deconstruct the Tabs Element
       function removeElements() {
         if (!instance._elements) { return }
-        
+
         for (section of instance._elements.sections) {
           insertAfter(section, instance._elements.container);
         }
@@ -851,26 +834,638 @@
 
       removeElements();
     };
-    
-    
+
+
     return Constructor;
   })();
 
-  //Build HTML
-  let toggleSections = document.querySelectorAll(".wm-tab-start:not(.loaded)");
-  for (const el of toggleSections) {
+  let BuildTabsFromCollection = (function(){
+
+    let global = window.wmTabsSettings || {};
+
+    /**
+     * Inject the button into the DOM
+     * @param  {Constructor} intance The settings for this instance
+     */
+    function injectTemplate(instance) {
+      // Create button
+      let container = instance.elements.el;
+      container.classList.add("wm-tabs-block");
+      container.id = 'wm-tab-' + (instance.elements.tabsCount + 1);
+      container.dataset.layout = instance.settings.layout;
+
+      let backIcon = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" aria-labelledby="title" role="img" xmlns:xlink="http://www.w3.org/1999/xlink">
+  <title>Back</title>
+  <path data-name="layer1" fill="none" stroke="#202020" stroke-miterlimit="10" stroke-width="2" d="M39 20.006L25 32l14 12.006" stroke-linejoin="round" stroke-linecap="round"></path>
+</svg>`, 
+          forwardIcon = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" aria-labelledby="title" role="img" xmlns:xlink="http://www.w3.org/1999/xlink">
+  <title>Forward</title>
+  <path data-name="layer1" fill="none" stroke="#202020" stroke-miterlimit="10" stroke-width="2" d="M26 20.006L40 32 26 44.006" stroke-linejoin="round" stroke-linecap="round"></path>
+</svg>`
+
+      let template = `
+      <div class="nav-container">
+        <span class="scrollable-indicator scroll-back-arrow" tabindex="0" role="button">${backIcon}</span>
+        <div class="nav-background"></div>
+        <nav>
+          <span class="indicator"></span>
+          <span class="indicator-track"></span>
+        </nav>
+        <span class="scrollable-indicator scroll-forward-arrow" tabindex="0" role="button">${forwardIcon}</span>
+      </div>
+      <article>
+        <div class="panels-background"></div>
+      </article>
+        `;
+
+      container.innerHTML = template;
+      instance.elements.container = container;
+      container.classList.add("loaded");
+
+      return container;
+    }
+
+    /**
+     * Inject the sections into the DOM
+     * @param  {instance} The settings for this instance
+     */
+    function addSections(instance) {
+      let currentArticle = instance.elements.article.innerHTML,
+          htmlString = "";
+
+      //Loop through each section
+      for ([index, item] of instance.elements.tabsObj.entries()) {
+        let section = instance.buildSection(item, index);
+        htmlString += section;
+      }
+
+      //Add Sections to Article
+      instance.elements.article.innerHTML = htmlString + currentArticle;
+      instance.loadImages(instance);
+    }
+
+    /**
+     * Inject buttons into the Tabs Component
+     * @param  {instance} The settings for this instance
+     */
+    function addButtons(instance) {
+      let currentNav = instance.elements.nav.innerHTML,
+          htmlString = "";
+
+      //Loop through each section
+      for ([index, item] of instance.elements.tabsObj.entries()) {
+        let btn = instance.buildButton(item, index);
+        htmlString += btn;
+      }
+
+      //Add Buttons to Nav
+      instance.elements.nav.innerHTML = htmlString + currentNav;
+
+      return instance.elements.navButtons;
+    }
+
+
+    /**
+     * Set Data Attributes on Tabs Component
+     * @param  {instance} The settings for this instance
+     */
+    function getLocalSettings(el) {
+      let localSettings = {},
+          data = el.dataset;
+
+      if (data.layout) localSettings.layout = data.layout;
+      if (data.event) {
+        if (data.event == "hover") data.event = "mouseover";
+        localSettings.event = data.event;
+      }
+
+      return localSettings;
+    }
+
+    /**
+     * Breakdown HTML when in Edit Mode
+     * @param  {Constructor} instance The current instantiation
+     */
+    function watchForEditMode(instance) {
+      let elemToObserve = document.querySelector("body");
+      let prevClassState = elemToObserve.classList.contains("sqs-edit-mode-active");
+      let observer = new MutationObserver(function (mutations) {
+        mutations.forEach(function (mutation) {
+          if (mutation.attributeName == "class") {
+            let currentClassState = mutation.target.classList.contains("sqs-edit-mode-active");
+            if (prevClassState !== currentClassState) {
+              prevClassState = currentClassState;
+              if (currentClassState) instance.destroy(instance);
+            }
+          }
+        });
+      });
+      observer.observe(elemToObserve, { attributes: true });
+    }
+
+    /**
+     * The constructor object
+     * @param {String} selector The selector for the element to render into
+     * @param {Object} options  User options and settings
+     */
+    function Constructor(el, options = {}) {
+
+      let local = getLocalSettings(el);
+
+      this.settings = Object.assign({}, defaults, global, local, options);
+
+      // Add Elements Obj
+      this.elements = {
+        el:el,
+        url: el.dataset.source,
+        tabsObj:this.settings.tabsObj,
+        container: null,
+        get tabsCount() {
+          let tabsCount = document.querySelectorAll('.wm-tabs-block').length;
+          return tabsCount;
+        },
+        get header() {
+          let header = document.querySelector('#header') || document.querySelector('header');
+          return header
+        },
+        get headerHeight() {
+          let header = document.querySelector('#header') || document.querySelector('header'),
+              headerHeight = header.getBoundingClientRect().height;
+          return headerHeight
+        },
+        get headerBottom() {
+          let header = document.querySelector('#header') || document.querySelector('header'),
+              headerBottom = header.getBoundingClientRect().bottom;
+          return headerBottom
+        },
+        get navWrapper() {
+          return this.container.querySelector(".nav-container");
+        },
+        get nav() {
+          return this.container.querySelector("nav");
+        },
+        get navButtons() {
+          return this.container.querySelectorAll("nav > button");
+        },
+        get indicator() {
+          return this.container.querySelector("nav > .indicator");
+        },
+        get indicatorTrack() {
+          return this.container.querySelector("nav > .indicator-track");
+        },
+        get article() {
+          return this.container.querySelector("article");
+        },
+        get sections() {
+          return this.container.querySelectorAll("article > section");
+        },
+        get activeTab() {
+          return this.container.querySelector("nav > button.active");
+        },
+        get activeSection() {
+          return this.container.querySelector("section.active");
+        },
+      };
+
+      // Inject template into the DOM
+      injectTemplate(this);
+
+      // Inject Sections into Container
+      addSections(this);
+
+      // Inject Buttons into Nav Wrapper
+      addButtons(this);
+
+      // Breakdown when in Edit Mode
+      watchForEditMode(this);
+
+      new WMTabs(this.elements.container);
+    }
+
+    /**
+     * Build a Tab Button Element
+     */
+
+    Constructor.prototype.buildButton = function (item, index) {
+      //Build Each Button and add to string
+      return `<button data-id="tab${index}" class="wm-tab-button">${item.title}</button>`;
+    };
+
+    /**
+     * Build a Tab Section Container
+     * {Node} article - the Article Element
+    */
+    Constructor.prototype.buildSection = function (item, index) {
+      return `<section data-type="page" data-id="tab${index}">${item.body.innerHTML}</section>`;
+    };
+
+    /**
+     * Destroy this instance
+    */
+    Constructor.prototype.destroy = function (instance) {
+      //Deconstruct the Tabs Element
+      function removeElements() {
+        if (!instance._elements) { return }
+
+        for (section of instance._elements.sections) {
+          insertAfter(section, instance._elements.container);
+        }
+        instance._elements.container.remove();
+      }
+
+      //Insert After Helper Function
+      function insertAfter(newNode, existingNode) {
+        existingNode.parentNode.insertBefore(newNode, existingNode.nextSibling);
+      }
+
+      removeElements();
+    };
+
+    Constructor.prototype.loadImages = function (instance) {
+      let images = instance.elements.container.querySelectorAll('.summary-v2-block img, .sqs-block-image img');
+      images.forEach(img => {
+
+        img.classList.add('loaded');
+        let imgData = img.dataset,
+            focalPoint = imgData.imageFocalPoint,
+            parentRation = imgData.parentRatio,
+            src = img.src;
+        if (focalPoint) {
+          let x = focalPoint.split(',')[0] * 100,
+              y = focalPoint.split(',')[1] * 100;
+          img.style.setProperty('--position', `${x}% ${y}%`)
+        }
+        if (!src) {
+          img.src = imgData.src
+        }
+      });
+    }
+
+    return Constructor;
+  })();
+  
+  let BuildTabsFromSections = (function(){
+
+    let global = window.wmTabsSettings || {};
+
+    /**
+     * Inject the button into the DOM
+     * @param  {Constructor} intance The settings for this instance
+     */
+    function injectTemplate(instance) {
+      // Create button
+      let container = instance.elements.el;
+      container.classList.add("wm-tabs-block");
+      container.id = 'wm-tab-' + (instance.elements.tabsCount + 1);
+      container.dataset.layout = instance.settings.layout;
+
+      let backIcon = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" aria-labelledby="title" role="img" xmlns:xlink="http://www.w3.org/1999/xlink">
+  <title>Back</title>
+  <path data-name="layer1" fill="none" stroke="#202020" stroke-miterlimit="10" stroke-width="2" d="M39 20.006L25 32l14 12.006" stroke-linejoin="round" stroke-linecap="round"></path>
+</svg>`, 
+          forwardIcon = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" aria-labelledby="title" role="img" xmlns:xlink="http://www.w3.org/1999/xlink">
+  <title>Forward</title>
+  <path data-name="layer1" fill="none" stroke="#202020" stroke-miterlimit="10" stroke-width="2" d="M26 20.006L40 32 26 44.006" stroke-linejoin="round" stroke-linecap="round"></path>
+</svg>`
+
+      let template = `
+      <div class="nav-container">
+        <span class="scrollable-indicator scroll-back-arrow" tabindex="0" role="button">${backIcon}</span>
+        <div class="nav-background"></div>
+        <nav>
+          <span class="indicator"></span>
+          <span class="indicator-track"></span>
+        </nav>
+        <span class="scrollable-indicator scroll-forward-arrow" tabindex="0" role="button">${forwardIcon}</span>
+      </div>
+      <article>
+        <div class="panels-background"></div>
+      </article>
+        `;
+
+      container.innerHTML = template;
+      instance.elements.container = container;
+      container.classList.add("loaded");
+
+      return container;
+    }
+
+    /**
+     * Inject the sections into the DOM
+     * @param  {instance} The settings for this instance
+     */
+    function addSections(instance) {
+      let currentArticle = instance.elements.article.innerHTML,
+          htmlString = "",
+          buttonContainers = instance.elements.buildButtons;
+
+      //Loop through each section
+      for ([index, button] of buttonContainers.entries()) {
+        let section = instance.buildSection(button, index);
+        htmlString += section;
+      }
+
+      //Add Sections to Article
+      instance.elements.article.innerHTML = htmlString + currentArticle;
+      instance.loadImages(instance);
+    }
+
+    /**
+     * Inject buttons into the Tabs Component
+     * @param  {instance} The settings for this instance
+     */
+    function addButtons(instance) {
+      let currentNav = instance.elements.nav.innerHTML,
+          htmlString = "",
+          buttonContainers = instance.elements.buildButtons;
+
+      //Loop through each section
+      for ([index, button] of buttonContainers.entries()) {
+        let btn = instance.buildButton(button, index);
+        htmlString += btn;
+      }
+
+      //Add Buttons to Nav
+      instance.elements.nav.innerHTML = htmlString + currentNav;
+
+      return instance.elements.navButtons;
+    }
+
+
+    /**
+     * Set Data Attributes on Tabs Component
+     * @param  {instance} The settings for this instance
+     */
+    function getLocalSettings(el) {
+      let localSettings = {},
+          data = el.dataset;
+
+      if (data.layout) localSettings.layout = data.layout;
+      if (data.event) {
+        if (data.event == "hover") data.event = "mouseover";
+        localSettings.event = data.event;
+      }
+
+      return localSettings;
+    }
+
+    /**
+     * Breakdown HTML when in Edit Mode
+     * @param  {Constructor} instance The current instantiation
+     */
+    function watchForEditMode(instance) {
+      let elemToObserve = document.querySelector("body");
+      let prevClassState = elemToObserve.classList.contains("sqs-edit-mode-active");
+      let observer = new MutationObserver(function (mutations) {
+        mutations.forEach(function (mutation) {
+          if (mutation.attributeName == "class") {
+            let currentClassState = mutation.target.classList.contains("sqs-edit-mode-active");
+            if (prevClassState !== currentClassState) {
+              prevClassState = currentClassState;
+              if (currentClassState) instance.destroy(instance);
+            }
+          }
+        });
+      });
+      observer.observe(elemToObserve, { attributes: true });
+    }
+
+    /**
+     * The constructor object
+     * @param {String} selector The selector for the element to render into
+     * @param {Object} options  User options and settings
+     */
+    function Constructor(el, options = {}) {
+
+      let local = getLocalSettings(el);
+
+      this.settings = Object.assign({}, defaults, global, local, options);
+
+      
+      // Add Elements Obj
+      this.elements = {
+        buildButtons: el.querySelectorAll('button[data-target]'),
+        el:el,
+        container: null,
+        get tabsCount() {
+          let tabsCount = document.querySelectorAll('.wm-tabs-block').length;
+          return tabsCount;
+        },
+        get header() {
+          let header = document.querySelector('#header') || document.querySelector('header');
+          return header
+        },
+        get headerHeight() {
+          let header = document.querySelector('#header') || document.querySelector('header'),
+              headerHeight = header.getBoundingClientRect().height;
+          return headerHeight
+        },
+        get headerBottom() {
+          let header = document.querySelector('#header') || document.querySelector('header'),
+              headerBottom = header.getBoundingClientRect().bottom;
+          return headerBottom
+        },
+        get navWrapper() {
+          return this.container.querySelector(".nav-container");
+        },
+        get nav() {
+          return this.container.querySelector("nav");
+        },
+        get navButtons() {
+          return this.container.querySelectorAll("nav > button");
+        },
+        get indicator() {
+          return this.container.querySelector("nav > .indicator");
+        },
+        get indicatorTrack() {
+          return this.container.querySelector("nav > .indicator-track");
+        },
+        get article() {
+          return this.container.querySelector("article");
+        },
+        get sections() {
+          return this.container.querySelectorAll("article > section");
+        },
+        get activeTab() {
+          return this.container.querySelector("nav > button.active");
+        },
+        get activeSection() {
+          return this.container.querySelector("section.active");
+        },
+      };
+
+      // Inject template into the DOM
+      injectTemplate(this);
+
+      // Inject Buttons into Nav Wrapper
+      addButtons(this);
+
+      // Inject Sections into Container
+      addSections(this);
+
+      // Breakdown when in Edit Mode
+      watchForEditMode(this);
+
+      new WMTabs(this.elements.container);
+    }
+
+    /**
+     * Build a Tab Button Element
+     */
+    Constructor.prototype.buildButton = function (button, index) {
+      //Build Each Button and add to string
+      return `<button data-id="tab${index}" class="wm-tab-button">${button.innerText}</button>`;
+    };
+
+    /**
+     * Build a Tab Section Container
+     * {Node} article - the Article Element
+    */
+    Constructor.prototype.buildSection = function (button, index) {
+      let targetsArr = button.dataset.target.split(','),
+          sectionsInnerHTML = '';
+      
+      targetsArr.forEach(selector => {
+        let el = document.querySelector(selector),
+            html = el.outerHTML;
+        
+        sectionsInnerHTML += html;
+        el.classList.add('hide-target')
+      })
+      
+      return `<section data-type="target" data-id="tab${index}">${sectionsInnerHTML}</section>`;
+    };
+
+    /**
+     * Destroy this instance
+    */
+    Constructor.prototype.destroy = function (instance) {
+      //Deconstruct the Tabs Element
+      function removeElements() {
+        if (!instance.elements) { return }
+
+        for (section of instance.elements.sections) {
+          insertAfter(section, instance.elements.container);
+        }
+        instance.elements.container.remove();
+      }
+
+      //Insert After Helper Function
+      function insertAfter(newNode, existingNode) {
+        existingNode.parentNode.insertBefore(newNode, existingNode.nextSibling);
+      }
+
+      removeElements();
+    };
+
+    Constructor.prototype.loadImages = function (instance) {
+      let images = instance.elements.container.querySelectorAll('.summary-v2-block img, .sqs-block-image img');
+      images.forEach(img => {
+
+        img.classList.add('loaded');
+        let imgData = img.dataset,
+            focalPoint = imgData.imageFocalPoint,
+            parentRation = imgData.parentRatio,
+            src = img.src;
+        if (focalPoint) {
+          let x = focalPoint.split(',')[0] * 100,
+              y = focalPoint.split(',')[1] * 100;
+          img.style.setProperty('--position', `${x}% ${y}%`)
+        }
+        if (!src) {
+          img.src = imgData.src
+        }
+      });
+    }
+
+    return Constructor;
+  }());
+
+  //Build HTML from Collection
+  async function getCollectionJSON(url) {
+    url += `?format=json-pretty`;
+    try {
+      return fetch(url)
+        .then(function (response) {
+        return response.json();
+      })
+        .then(function (json) {
+        return json.items;
+      });
+    } catch (err) {
+      console.error(err)
+    }
+  }
+  async function loadHtml(url) {
+    try {
+      return fetch(url)
+        .then(function (response) {
+        return response.text();
+      })
+        .then(function (text) {
+        let parser = new DOMParser(),
+            doc = parser.parseFromString(text, 'text/html'),
+            html = doc.querySelector('#sections .blog-item-content-wrapper .sqs-layout').parentElement;
+        return html;
+      })
+        .then(function (body) {
+        return body;
+      });
+    } catch (err) {
+      console.error(err);
+    }
+  }
+  async function buildTabsFromCollection(el, url) {
+    let collectionObj = await getCollectionJSON(url),
+        results = []
+
+    collectionObj.forEach(item => {
+      let obj = {
+        url: item.fullUrl,
+        title: item.title,
+        assetUrl: item.assetUrl,
+        body: ''
+      }
+      results.push(obj);
+    })
+
+    await Promise.all(results.map(async (item) => {
+      item.body = await loadHtml(item.url);
+    }));
+
+    new BuildTabsFromCollection(el, {tabsObj:results});
+  }
+  let initCollections = document.querySelectorAll(`[data-wm-plugin="tabs"][data-source]:not(.loaded, .loading)`);
+  for (const el of initCollections) {
+    el.classList.add('loading');
+    let results = buildTabsFromCollection(el, el.dataset.source);
+  }
+  
+  //Build HTML from Selectors
+  let initSections = document.querySelectorAll(`[data-wm-plugin="tabs"]:not(.loaded) [data-target]`);
+  for (const el of initSections) {
+    let block = el.closest(`[data-wm-plugin="tabs"]:not(.loaded)`);
+    if (block) {
+      new BuildTabsFromSections(block)
+    }
+  }
+
+  //Build HTML from Blocks 
+  let initBlocks = document.querySelectorAll(`[data-wm-plugin="tabs"][data-tab-start]:not(.loaded)`);
+  for (const el of initBlocks) {
     let block = el.closest(".sqs-block");
     //Stop if already within a Tabs Section
     if (!el.matches(".loaded")) {
-      new BuildTabsHTML(block, {});
+      new BuildTabsHTML(block);
     }
   }
-  
-  //Add Javascript
-  let tabsContainers = document.querySelectorAll(".wm-tabs-block:not(.loaded)");
+
+  //From Raw HTML
+  let tabsContainers = document.querySelectorAll(`[data-wm-plugin="tabs"]:not(.loaded, .loading), .wm-tabs-block:not(.loaded, .loading)`);
   for (const tab of tabsContainers) {
     if (!tab.matches(".loaded")) {
-      new WMTabs(tab, {});
+      new WMTabs(tab);
     }
   }
+
 })();
