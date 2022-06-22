@@ -7,7 +7,7 @@
 (function () {
   const ps = {
     cssId: 'wm-tabs',
-    cssFile: 'https://cdn.jsdelivr.net/gh/willmyethewebsiteguy/tabsForBlocks@4.2.003/styles.min.css'
+    cssFile: 'https://assets.codepen.io/3198845/WMTabsTESTINGONLY.css'
   };
   const defaults = {
       layout: "horiztonal", // or 'vertical'
@@ -688,7 +688,7 @@
         if (data.event == "hover") data.event = "mouseover";
         localSettings.event = data.event;
       }
-
+      console.log('settings', localSettings)
       return localSettings;
     }
 
@@ -787,7 +787,7 @@
       // Breakdown when in Edit Mode
       watchForEditMode(this);
 
-      new WMTabs(this.elements.container);
+      new WMTabs(this.elements.container, this.settings);
     }
 
     /**
@@ -935,7 +935,7 @@
 
       if (data.layout) localSettings.layout = data.layout;
       if (data.event) {
-        if (data.event == "hover") data.event = "mouseover";
+        if (data.event == "hover");
         localSettings.event = data.event;
       }
 
@@ -1381,91 +1381,110 @@
     return Constructor;
   }());
 
-  //Build HTML from Collection
-  async function getCollectionJSON(url) {
-    url += `?format=json-pretty`;
-    try {
-      return fetch(url)
-        .then(function (response) {
-        return response.json();
-      })
-        .then(function (json) {
-        return json.items;
-      });
-    } catch (err) {
-      console.error(err)
-    }
-  }
-  async function loadHtml(url) {
-    try {
-      return fetch(url)
-        .then(function (response) {
-        return response.text();
-      })
-        .then(function (text) {
-        let parser = new DOMParser(),
-            doc = parser.parseFromString(text, 'text/html'),
-            html = doc.querySelector('#sections .blog-item-content-wrapper .sqs-layout').parentElement;
-        return html;
-      })
-        .then(function (body) {
-        return body;
-      });
-    } catch (err) {
-      console.error(err);
-    }
-  }
-  async function buildTabsFromCollection(el, url) {
-    let collectionObj = await getCollectionJSON(url),
-        results = []
-
-    collectionObj.forEach(item => {
-      let obj = {
-        url: item.fullUrl,
-        title: item.title,
-        assetUrl: item.assetUrl,
-        body: ''
+  
+  function initTabs() {
+    //Build HTML from Collection
+    async function getCollectionJSON(url) {
+      url += `?format=json-pretty`;
+      try {
+        return fetch(url)
+          .then(function (response) {
+          return response.json();
+        })
+          .then(function (json) {
+          return json.items;
+        });
+      } catch (err) {
+        console.error(err)
       }
-      results.push(obj);
-    })
+    }
+    async function loadHtml(url) {
+      try {
+        return fetch(url)
+          .then(function (response) {
+          return response.text();
+        })
+          .then(function (text) {
+          let parser = new DOMParser(),
+              doc = parser.parseFromString(text, 'text/html'),
+              html = doc.querySelector('#sections .blog-item-content-wrapper .sqs-layout').parentElement;
+          return html;
+        })
+          .then(function (body) {
+          return body;
+        });
+      } catch (err) {
+        console.error(err);
+      }
+    }
+    async function buildTabsFromCollection(el, url) {
+      let collectionObj = await getCollectionJSON(url),
+          results = []
 
-    await Promise.all(results.map(async (item) => {
-      item.body = await loadHtml(item.url);
-    }));
+      collectionObj.forEach(item => {
+        let obj = {
+          url: item.fullUrl,
+          title: item.title,
+          assetUrl: item.assetUrl,
+          body: ''
+        }
+        results.push(obj);
+      })
 
-    new BuildTabsFromCollection(el, {tabsObj:results});
-  }
-  let initCollections = document.querySelectorAll(`[data-wm-plugin="tabs"][data-source]:not(.loaded, .loading)`);
-  for (const el of initCollections) {
-    el.classList.add('loading');
-    let results = buildTabsFromCollection(el, el.dataset.source);
+      await Promise.all(results.map(async (item) => {
+        item.body = await loadHtml(item.url);
+      }));
+
+      new BuildTabsFromCollection(el, {tabsObj:results});
+    }
+    let initCollections = document.querySelectorAll(`[data-wm-plugin="tabs"][data-source]:not(.loaded, .loading)`);
+    for (const el of initCollections) {
+      el.classList.add('loading');
+      let results = buildTabsFromCollection(el, el.dataset.source);
+    }
+
+    //Build HTML from Selectors
+    let initSections = document.querySelectorAll(`[data-wm-plugin="tabs"]:not(.loaded) [data-target]`);
+    for (const el of initSections) {
+      let block = el.closest(`[data-wm-plugin="tabs"]:not(.loaded)`);
+      if (block) {
+        try {
+          new BuildTabsFromSections(block)        
+        } catch (err) {
+          console.error('Problem in building the Tabs from Targets')
+          console.error(err);
+        }
+      }
+    }
+
+    //Build HTML from Stacked Blocks 
+    let initBlocks = document.querySelectorAll(`[data-wm-plugin="tabs"][data-tab-start]:not(.loaded), .wm-tab-start:not(.loaded)`);
+    for (const el of initBlocks) {
+      let block = el.closest(".sqs-block");
+      //Stop if already within a Tabs Section
+      if (!el.matches(".loaded")) {
+        try {
+          new BuildTabsHTML(block);
+        } catch (err) {
+          console.error('Problem in building the Tabs from Blocks')
+          console.error(err);
+        }
+      }
+    }
+
+    //From Raw HTML
+    let tabsContainers = document.querySelectorAll(`[data-wm-plugin="tabs"]:not(.loaded, .loading), .wm-tabs-block:not(.loaded, .loading)`);
+    for (const tab of tabsContainers) {
+      if (!tab.matches(".loaded")) {
+        new WMTabs(tab);
+      }
+    }
   }
   
-  //Build HTML from Selectors
-  let initSections = document.querySelectorAll(`[data-wm-plugin="tabs"]:not(.loaded) [data-target]`);
-  for (const el of initSections) {
-    let block = el.closest(`[data-wm-plugin="tabs"]:not(.loaded)`);
-    if (block) {
-      new BuildTabsFromSections(block)
-    }
-  }
+  window.wmTabsInit = function() {
+    initTabs();
+  };
 
-  //Build HTML from Stacked Blocks 
-  let initBlocks = document.querySelectorAll(`[data-wm-plugin="tabs"][data-tab-start]:not(.loaded), .wm-tab-start:not(.loaded)`);
-  for (const el of initBlocks) {
-    let block = el.closest(".sqs-block");
-    //Stop if already within a Tabs Section
-    if (!el.matches(".loaded")) {
-      new BuildTabsHTML(block);
-    }
-  }
-
-  //From Raw HTML
-  let tabsContainers = document.querySelectorAll(`[data-wm-plugin="tabs"]:not(.loaded, .loading), .wm-tabs-block:not(.loaded, .loading)`);
-  for (const tab of tabsContainers) {
-    if (!tab.matches(".loaded")) {
-      new WMTabs(tab);
-    }
-  }
-
+  initTabs();
+  window.addEventListener('load', initTabs);
 })();
