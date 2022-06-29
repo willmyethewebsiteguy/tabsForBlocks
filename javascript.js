@@ -1,5 +1,5 @@
 /**
- * Version 4.2
+ * Version 4.1.05
  * Tabs For Squarespace Sections
  * Copyright Will Myers
 **/
@@ -7,26 +7,22 @@
 (function () {
   const ps = {
     cssId: 'wm-tabs',
-    cssFile: 'https://cdn.jsdelivr.net/gh/willmyethewebsiteguy/tabsForBlocks@4.2.004/styles.min.css'
+    cssFile: 'https://cdn.jsdelivr.net/gh/willmyethewebsiteguy/tabsForBlocks@4.3.001/styles.min.css'
   };
   const defaults = {
-      layout: "horiztonal", // or 'vertical'
-      event: "click", // or 'hover'
-      inAnimation: "slideIn",
-      mobileType: "tabs", // or 'accordions'
-      on: {
-        beforeOpenTab: null,
-        afterOpenTab: null,
-      },
-      tabbingDelay: 80,
-    };
-
-  let WMTabs = (function(){
-
-    let global = window.wmTabsSettings || {};
-
+    layout: "horiztonal", // or 'vertical'
+    event: "click", // or 'hover'
+    inAnimation: "slideIn",
+    mobileType: "tabs", // or 'accordions'
+    on: {
+      beforeOpenTab: null,
+      afterOpenTab: null,
+    },
+    tabbingDelay: 80,
+  };
+  const utils = {
     /* Emit a custom event */
-    function emitEvent(type, detail = {}, elem = document) {
+    emitEvent: function (type, detail = {}, elem = document) {
       // Make sure there's an event type
       if (!type) return;
 
@@ -39,13 +35,16 @@
 
       // Dispatch the event
       return elem.dispatchEvent(event);
-    }
-
-    /**
-     * Debounce functions for better performance
-     * (c) 2021 Chris Ferdinandi, MIT License, https://gomakethings.com
-     */
-    function debounce(fn) {
+    },
+    inIframe: function () {
+      console.log('testing')
+      try {
+        return window.self !== window.top;
+      } catch (e) {
+        return true;
+      }
+    },
+    debounce: function (fn) {
       // Setup a timer
       let timeout;
 
@@ -64,8 +63,13 @@
         timeout = window.requestAnimationFrame(function () {
           fn.apply(context, args);
         });
-      };
+      }
     }
+  }
+
+  let WMTabs = (function(){
+
+    let global = window.wmTabsSettings || {};
 
     /* Scroll To Top When Below */
     function scrollToTopOfTab(instance) {
@@ -84,7 +88,6 @@
 
       return isBelow
     }
-
 
     /**
      * Toggle the button
@@ -112,11 +115,13 @@
 
       elements.sections[index].classList.add("active");
 
-      emitEvent("wmTabs:afterOpen", {}, elements.container);
+      utils.emitEvent("wmTabs:afterOpen", {
+        target: elements.container
+      }, elements.container);
     }
 
     /**
-     * Create Tab Buttonan event listener
+     * Create Tab Button and event listener
      * @param  {Constructor} instance The current instantiation
      */
     function createEventListener(instance) {
@@ -212,7 +217,7 @@
       }
 
       window.addEventListener('scroll', function() {
-        debounce(handleEvent())
+        utils.debounce(handleEvent())
       })
 
       header.addEventListener("transitionend", handleEvent);
@@ -506,8 +511,14 @@
 
       // Create the After Tab Open event listener
       afterTabOpenEventListener(this);
-     
+      
       this.initTab();
+
+      el.wmTab = {
+        initilized: true,
+        settings: this.settings,
+        elements: this.elements
+      };
     }
 
     /**
@@ -719,7 +730,6 @@
      * @param {Object} options  User options and settings
      */
     function Constructor(el, options = {}) {
-      console.log(el)
       let local = getLocalSettings(el);
 
       this.settings = Object.assign({}, defaults, global, local, options);
@@ -820,11 +830,7 @@
       //Deconstruct the Tabs Element
       function removeElements() {
         if (!instance._elements) { return }
-
-        for (section of instance._elements.sections) {
-          insertAfter(section, instance._elements.container);
-        }
-        instance._elements.container.remove();
+        //instance._elements.container.remove();
       }
 
       //Insert After Helper Function
@@ -838,7 +844,6 @@
 
     return Constructor;
   })();
-
   let BuildTabsFromCollection = (function(){
 
     let global = window.wmTabsSettings || {};
@@ -1065,11 +1070,6 @@
     Constructor.prototype.destroy = function (instance) {
       //Deconstruct the Tabs Element
       function removeElements() {
-        if (!instance._elements) { return }
-
-        for (section of instance._elements.sections) {
-          insertAfter(section, instance._elements.container);
-        }
         instance._elements.container.remove();
       }
 
@@ -1103,7 +1103,6 @@
 
     return Constructor;
   })();
-  
   let BuildTabsFromSections = (function(){
 
     let global = window.wmTabsSettings || {};
@@ -1159,14 +1158,30 @@
           htmlString = "",
           buttonContainers = instance.elements.buildButtons;
 
-      //Loop through each section
       for ([index, button] of buttonContainers.entries()) {
-        let section = instance.buildSection(button, index);
-        htmlString += section;
+        let data = button.dataset
+        htmlString = document.createElement('section')
+        htmlString.id = `tab${index}`;
+        htmlString.dataset.type = "section";
+        if (data.target) { 
+          let targets = button.dataset.target.split(',');
+          targets.forEach(item => {
+            if (isNaN(item)) {
+              htmlString.append(document.querySelector(item))
+            } else {
+              for (let i = 1; i <= item; i++) {
+                let nextSection = instance.elements.container.closest('.page-section').nextElementSibling;
+                if (nextSection) htmlString.append(nextSection);
+              }
+            };
+          })
+        } else {
+          let nextSection = instance.elements.container.closest('.page-section').nextElementSibling;
+          if (nextSection) htmlString.append(nextSection);
+        }
+        instance.elements.article.append(htmlString);
       }
 
-      //Add Sections to Article
-      instance.elements.article.innerHTML = htmlString + currentArticle;
       instance.loadImages(instance);
     }
 
@@ -1179,6 +1194,7 @@
           htmlString = "",
           buttonContainers = instance.elements.buildButtons;
 
+
       //Loop through each section
       for ([index, button] of buttonContainers.entries()) {
         let btn = instance.buildButton(button, index);
@@ -1190,7 +1206,6 @@
 
       return instance.elements.navButtons;
     }
-
 
     /**
      * Set Data Attributes on Tabs Component
@@ -1240,11 +1255,10 @@
       let local = getLocalSettings(el);
 
       this.settings = Object.assign({}, defaults, global, local, options);
-
       
       // Add Elements Obj
       this.elements = {
-        buildButtons: el.querySelectorAll('button[data-target]'),
+        buildButtons: el.querySelectorAll(':scope > button'),
         el:el,
         container: null,
         get tabsCount() {
@@ -1343,16 +1357,7 @@
       //Deconstruct the Tabs Element
       function removeElements() {
         if (!instance.elements) { return }
-
-        for (section of instance.elements.sections) {
-          insertAfter(section, instance.elements.container);
-        }
-        instance.elements.container.remove();
-      }
-
-      //Insert After Helper Function
-      function insertAfter(newNode, existingNode) {
-        existingNode.parentNode.insertBefore(newNode, existingNode.nextSibling);
+        instance.elements.article.remove();
       }
 
       removeElements();
@@ -1380,7 +1385,6 @@
 
     return Constructor;
   }());
-
   
   function initTabs() {
     //Build HTML from Collection
@@ -1435,7 +1439,17 @@
         item.body = await loadHtml(item.url);
       }));
 
-      new BuildTabsFromCollection(el, {tabsObj:results});
+      document.querySelectorAll(`[data-wm-plugin="tabs"][data-source="${url}"]:not(.loaded), [data-wm-plugin="tabs"][data-source="${url}"]:not(.loaded)`).forEach(el => {
+        try {
+          new BuildTabsFromCollection(el, {tabsObj:results});
+          el.classList.remove('loading');
+        } catch (err) {
+          el.classList.remove('loading');
+          console.error('Problem Loading the Tabs From URL')
+          console.log(err)
+        }
+      })
+
     }
     let initCollections = document.querySelectorAll(`[data-wm-plugin="tabs"][data-source]:not(.loaded, .loading)`);
     for (const el of initCollections) {
@@ -1444,15 +1458,14 @@
     }
 
     //Build HTML from Selectors
-    let initSections = document.querySelectorAll(`[data-wm-plugin="tabs"]:not(.loaded) [data-target]`);
+    let initSections = document.querySelectorAll(`[data-wm-plugin="tabs"]:not(.loaded) > button`);
     for (const el of initSections) {
       let block = el.closest(`[data-wm-plugin="tabs"]:not(.loaded)`);
       if (block) {
         try {
           new BuildTabsFromSections(block)        
         } catch (err) {
-          console.error('Problem in building the Tabs from Targets')
-          console.error(err);
+          console.error('Problem in building the Tabs from Targets', err);
         }
       }
     }
@@ -1480,11 +1493,8 @@
       }
     }
   }
-  
-  window.wmTabsInit = function() {
-    initTabs();
-  };
 
   initTabs();
   window.addEventListener('load', initTabs);
+  window.wmTabsInit = function() { initTabs() };
 })();
