@@ -1,5 +1,5 @@
 /**
- * Version 4.1.05
+ * Version 4.3
  * Tabs For Squarespace Sections
  * Copyright Will Myers
 **/
