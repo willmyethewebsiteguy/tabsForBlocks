@@ -7,7 +7,7 @@
 (function () {
   const ps = {
     cssId: 'wm-tabs',
-    cssFile: 'https://cdn.jsdelivr.net/gh/willmyethewebsiteguy/tabsForBlocks@4.3.001/styles.min.css'
+    cssFile: 'https://cdn.jsdelivr.net/gh/willmyethewebsiteguy/tabsForBlocks@4.3.002/styles.min.css'
   };
   const defaults = {
     layout: "horiztonal", // or 'vertical'
@@ -1045,6 +1045,7 @@
       watchForEditMode(this);
 
       new WMTabs(this.elements.container);
+      window.Squarespace?.globalInit(Y);
     }
 
     /**
